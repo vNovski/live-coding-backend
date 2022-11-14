@@ -24,6 +24,10 @@ const io = new Server(server, {
     }
 });
 
+app.get('/', (req, res) => {
+    res.send('Server Works!');
+});
+
 server.listen(config.PORT, () => {
     io.on(SokcketEvents.connect, (socket) => {
         console.log('a user connected');
