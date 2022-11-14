@@ -7,6 +7,9 @@
     "start": "node dist/index.js",
     "serve": "concurrently \"npx typescript --watch\" \"set NODE_ENV=development&& nodemon -q dist/index.js\""
   },
+  "engines": {
+    "node": "14.16.0"
+  },
   "author": "",
   "license": "ISC",
   "dependencies": {
