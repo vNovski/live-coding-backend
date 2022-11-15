@@ -9,6 +9,7 @@ enum SokcketEvents {
 }
 
 enum CommunicationEventTypes {
+    shareConnections = 'share-connections',
     connect = 'client-connect',
     disconnect = 'client-disconnect',
     terminalChange = 'terminal-code-change',
@@ -31,8 +32,9 @@ app.get('/', (req, res) => {
 
 server.listen(config.PORT, () => {
     io.on(SokcketEvents.connect, (socket) => {
-        console.log('a user connected');
+        console.log('a user connected', io.sockets.sockets);
         socket.broadcast.emit(CommunicationEventTypes.connect, socket.id);
+        socket.emit(CommunicationEventTypes.shareConnections, Array.from(io.sockets.sockets.keys()).filter(id => id != socket.id));
         socket.on(CommunicationEventTypes.terminalChange, (message: any) => {
             socket.broadcast.emit(CommunicationEventTypes.terminalChange, message);
         });
