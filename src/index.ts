@@ -9,7 +9,8 @@ enum SokcketEvents {
 }
 
 enum CommunicationEventTypes {
-    userConnect = 'user-connect',
+    connect = 'client-connect',
+    disconnect = 'client-disconnect',
     terminalChange = 'terminal-code-change',
     terminalMouseMove = 'terminal-mousemove',
     terminalCursorChange = 'terminal-cursor-change',
@@ -31,7 +32,7 @@ app.get('/', (req, res) => {
 server.listen(config.PORT, () => {
     io.on(SokcketEvents.connect, (socket) => {
         console.log('a user connected');
-        io.emit(CommunicationEventTypes.userConnect, Array.from(io.sockets.sockets.keys()));
+        socket.broadcast.emit(CommunicationEventTypes.connect, socket.id);
         socket.on(CommunicationEventTypes.terminalChange, (message: any) => {
             socket.broadcast.emit(CommunicationEventTypes.terminalChange, message);
         });
@@ -49,7 +50,7 @@ server.listen(config.PORT, () => {
         });
 
         socket.on(SokcketEvents.disconnect, () => {
-            io.emit(CommunicationEventTypes.userConnect, Array.from(io.sockets.sockets.keys()));
+            socket.broadcast.emit(CommunicationEventTypes.disconnect, socket.id);
             console.log('a user disconnected!');
         });
     });
