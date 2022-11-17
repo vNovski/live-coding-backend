@@ -1,9 +1,9 @@
 import express, { Express, Request, Response } from 'express';
 import http from 'http';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
 import config from './config';
 
-enum SokcketEvents {
+enum SocketEvents {
     connect = 'connection',
     disconnect = 'disconnect'
 }
@@ -16,6 +16,23 @@ enum CommunicationEventTypes {
     terminalMouseMove = 'terminal-mousemove',
     terminalCursorChange = 'terminal-cursor-change',
     terminalSelectionChange = 'terminal-selection-change',
+    joinRoom = 'join-room',
+    leaveRoom = 'leave-room',
+
+}
+
+
+class Room {
+    id: string;
+    socket: Socket;
+    constructor(id: string, socket: Socket) {
+        this.id = id;
+        this.socket = socket;
+    }
+
+    emit(event: string, payload: any): void {
+        this.socket.to(this.id).emit(event, payload);
+    }
 }
 
 const app: Express = express();
@@ -30,29 +47,39 @@ app.get('/', (req, res) => {
     res.send('Server Works!');
 });
 
+
 server.listen(config.PORT, () => {
-    io.on(SokcketEvents.connect, (socket) => {
-        console.log('a user connected', io.sockets.sockets);
-        socket.broadcast.emit(CommunicationEventTypes.connect, socket.id);
+    io.on(SocketEvents.connect, (socket: Socket) => {
+
+        socket.on(CommunicationEventTypes.joinRoom, (roomId: string) => {
+            socket.join(roomId);
+            socket.broadcast.emit(CommunicationEventTypes.connect, socket.id);
+        });
+
+        socket.on(CommunicationEventTypes.leaveRoom, ({ roomId }) => {
+            socket.broadcast.to(roomId).emit(CommunicationEventTypes.disconnect, socket.id);
+            socket.leave(roomId);
+        });
+
         socket.emit(CommunicationEventTypes.shareConnections, Array.from(io.sockets.sockets.keys()).filter(id => id != socket.id));
-        socket.on(CommunicationEventTypes.terminalChange, (message: any) => {
-            socket.broadcast.emit(CommunicationEventTypes.terminalChange, message);
+        socket.on(CommunicationEventTypes.terminalChange, ({ roomId, data }: any) => {
+            socket.broadcast.to(roomId).emit(CommunicationEventTypes.terminalChange, data);
         });
 
-        socket.on(CommunicationEventTypes.terminalMouseMove, (mouse: { x: number, y: number, color: string  }) => {
-            socket.broadcast.emit(CommunicationEventTypes.terminalMouseMove, { userId: socket.id, ...mouse });
+        socket.on(CommunicationEventTypes.terminalMouseMove, ({ roomId, data }) => {
+            socket.broadcast.to(roomId).emit(CommunicationEventTypes.terminalMouseMove, { userId: socket.id, ...data });
         });
 
-        socket.on(CommunicationEventTypes.terminalCursorChange, (cursor: any) => {
-            socket.broadcast.emit(CommunicationEventTypes.terminalCursorChange, { userId: socket.id, ...cursor });
+        socket.on(CommunicationEventTypes.terminalCursorChange, ({ roomId, data }) => {
+            socket.broadcast.to(roomId).emit(CommunicationEventTypes.terminalCursorChange, { userId: socket.id, ...data });
         });
 
-        socket.on(CommunicationEventTypes.terminalSelectionChange, (cursor: any) => {
-            socket.broadcast.emit(CommunicationEventTypes.terminalSelectionChange, { userId: socket.id, ...cursor });
+        socket.on(CommunicationEventTypes.terminalSelectionChange, ({ roomId, data }) => {
+            socket.broadcast.to(roomId).emit(CommunicationEventTypes.terminalSelectionChange, { userId: socket.id, ...data });
         });
 
-        socket.on(SokcketEvents.disconnect, () => {
-            socket.broadcast.emit(CommunicationEventTypes.disconnect, socket.id);
+        socket.on(SocketEvents.disconnect, () => {
+
             console.log('a user disconnected!');
         });
     });
