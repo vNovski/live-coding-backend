@@ -4,7 +4,8 @@ class Room {
 
     private state: any = {
         terminal: {
-            code: ''
+            value: '',
+            change: null
         }
     };
 

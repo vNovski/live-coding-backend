@@ -1,21 +1,23 @@
 import { Server, Socket } from "socket.io";
 import { TermianlEvents } from "./enums/terminal.events.enum";
+import { TerminalChange } from "./interfaces/terminal/change.interface";
 import roomsState from "./state/rooms.state";
 
 
 export default (io: Server, socket: Socket) => {
 
-    const change = ({ roomId, data }: { roomId: string, data: string }) => {
+    const change = ({ roomId, data: terminalState }: { roomId: string, data: { value: string, change: TerminalChange } }) => {
         roomsState.get(roomId)?.dispach((state: any) => {
             return {
                 ...state,
                 terminal: {
                     ...state.terminal,
-                    code: data
+                    value: terminalState.value
                 }
             }
         });
-        socket.broadcast.to(roomId).emit(TermianlEvents.change, data);
+        console.log(terminalState)
+        socket.broadcast.to(roomId).emit(TermianlEvents.change, terminalState.change);
     }
 
     const mouseMove = ({ roomId, data }: { roomId: string, data: any }) => {

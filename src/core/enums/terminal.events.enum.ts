@@ -1,4 +1,5 @@
 export enum TermianlEvents {
+    shareState = 'terminal:share-state',
     change = 'terminal:change',
     mouseMove = 'terminal:mousemove',
     cursorChange = 'terminal:cursor-change',

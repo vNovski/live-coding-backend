@@ -11,8 +11,10 @@ export const registedRoomHandlers = (io: Server, socket: Socket) => {
     registedTerminalHandlers(io, socket); // extend romm handlers to room handlers + terminal handlers 
 
     const join = (id: string) => {
-        const code = roomsState.get(id)?.snapshot(({ terminal }: any) => terminal.code);
-        socket.emit(TermianlEvents.change, code);
+        const value = roomsState.get(id)?.snapshot(({ terminal }: any) => terminal.value);
+        if(value !== undefined || value !== null) {
+            socket.emit(TermianlEvents.shareState, { value });
+        }
         socket.join(id);
         socket.broadcast.to(id).emit(RoomEvents.join, socket.id);
         console.log('ROOM: user joined', socket.id, socket.rooms);
@@ -23,8 +25,7 @@ export const registedRoomHandlers = (io: Server, socket: Socket) => {
         socket.broadcast.to(id).emit(RoomEvents.leave, socket.id);
         socket.leave(id);
     }
-
-
+    
     socket.on(RoomEvents.join, join);
     socket.on(RoomEvents.leave, leave);
 }
