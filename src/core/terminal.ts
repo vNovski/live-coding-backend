@@ -16,7 +16,6 @@ export default (io: Server, socket: Socket) => {
                 }
             }
         });
-        console.log(terminalState)
         socket.broadcast.to(roomId).emit(TermianlEvents.change, terminalState.change);
     }
 
