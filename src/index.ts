@@ -5,6 +5,8 @@ import config from './config';
 import { RoomEvents } from './core/enums/room.events.enum';
 import { SocketEvents } from './core/enums/socket-events.enum';
 import { registedRoomHandlers } from './core/rooms';
+import roomsState from "./core/state/rooms.state";
+import usersState from './core/state/users.state';
 
 const app: Express = express();
 const server = http.createServer(app);
@@ -29,7 +31,11 @@ const onConnection = (socket: Socket) => {
     });
 
     socket.on(SocketEvents.disconnect, () => {
-        console.log('user disconnected!');
+        const deletedUser = usersState.delete(socket.id);
+        if(deletedUser && deletedUser.roomId) {
+          roomsState.get(deletedUser.roomId).deleteUserById(socket.id);
+        }
+        console.log('user disconnected', socket.id);
     });
 }
 
