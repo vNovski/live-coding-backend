@@ -1,3 +1,4 @@
+import { quotes } from "../../quotes-for-programmers";
 import { IUser } from "../interfaces/user.interface";
 
 class Room {
@@ -9,7 +10,7 @@ class Room {
   } = {
     userIds: new Set(),
     terminal: {
-      value: "",
+      value: '// '+ quotes[Math.floor(Math.random() * quotes.length)].quote,
       change: null,
     },
   };
