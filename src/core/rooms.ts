@@ -31,7 +31,7 @@ export const registedRoomHandlers = (io: Server, socket: Socket) => {
     }
     socket.join(roomId);
     socket.broadcast.to(roomId).emit(RoomEvents.join, joinedUser);
-    console.log("ROOM: user joined", joinedUser.id);
+    console.log("ROOM: user joined", joinedUser.id, socket.handshake.query);
   };
 
   const leave = (id: string) => {

@@ -21,7 +21,17 @@ app.get("/", (_, res) => {
   res.send("Server Works!");
 });
 
+app.get("/rooms", async (_, res) => {
+  const sockets = await  io.fetchSockets();
+  const users = usersState.getAll();
+  console.log(users);
+  console.log(sockets.map(({id}) => id));
+  res.send('TEST');
+});
+
 const onConnection = (socket: Socket) => {
+  console.log('QUERY', socket.handshake.query)
+
   registedRoomHandlers(io, socket);
 
   socket.on("disconnecting", function () {
