@@ -22,16 +22,12 @@ app.get("/", (_, res) => {
 });
 
 app.get("/rooms", async (_, res) => {
-  const sockets = await  io.fetchSockets();
+  const sockets = await io.fetchSockets();
   const users = usersState.getAll();
-  console.log(users);
-  console.log(sockets.map(({id}) => id));
-  res.send('TEST');
+  res.send({ users: sockets.map(({id}) => id),  rooms: io.sockets.adapter.rooms});
 });
 
 const onConnection = (socket: Socket) => {
-  console.log('QUERY', socket.handshake.query)
-
   registedRoomHandlers(io, socket);
 
   socket.on("disconnecting", function () {
@@ -53,6 +49,9 @@ const onConnection = (socket: Socket) => {
     const deletedUser = usersState.delete(socket.id);
     if (deletedUser && deletedUser.roomId) {
       roomsState.get(deletedUser.roomId).deleteUserById(socket.id);
+      if (roomsState.get(deletedUser.roomId).isEmpty()) {
+        roomsState.delete(deletedUser.roomId);
+      }
     }
     console.log("user disconnected", socket.id);
   });

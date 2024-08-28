@@ -11,7 +11,7 @@ export const registedRoomHandlers = (io: Server, socket: Socket) => {
 
   const join = ({ roomId }: { roomId: string }) => {
     const userId = socket.id;
-    const userData = socket.handshake.query as { username: string, color: string  };
+    const userData = socket.handshake.query as { username: string, color: string };
     const room = roomsState.get(roomId);
 
     // users in room without joined user
@@ -37,10 +37,15 @@ export const registedRoomHandlers = (io: Server, socket: Socket) => {
 
   const leave = (id: string) => {
     const deletedUser = usersState.delete(id);
-    if(deletedUser && deletedUser.roomId) {
-      roomsState.get(deletedUser.roomId).deleteUserById(id);
+    if (deletedUser && deletedUser.roomId) {
+      const roomId = deletedUser.roomId;
+      const room = roomsState.get(roomId);
+      room.deleteUserById(id);
+      if (room.isEmpty()) {
+        roomsState.delete(roomId);
+      }
     }
-    
+
     socket.broadcast.to(id).emit(RoomEvents.leave, socket.id);
     socket.leave(id);
     console.log("ROOM: user leaved", id);

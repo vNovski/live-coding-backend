@@ -1,5 +1,4 @@
 import { quotes } from "../../quotes-for-programmers";
-import { IUser } from "../interfaces/user.interface";
 
 class Room {
   id: string;
@@ -43,6 +42,10 @@ class Room {
 
   has(userId: string): boolean {
     return this.state.userIds.has(userId);
+  }
+
+  isEmpty(): boolean {
+    return this.state.userIds.size === 0;
   }
 }
 
