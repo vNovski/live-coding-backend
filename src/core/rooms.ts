@@ -3,21 +3,22 @@ import registedTerminalHandlers from "./terminal";
 import roomsState from "./state/rooms.state";
 import { RoomEvents } from "./enums/room.events.enum";
 import { TermianlEvents } from "./enums/terminal.events.enum";
-import { IUser } from "./interfaces/user.interface";
 import usersState from "./state/users.state";
 
 // RoomHandlers -> TerminalHandlers
 export const registedRoomHandlers = (io: Server, socket: Socket) => {
   registedTerminalHandlers(io, socket); // extend romm handlers to room handlers + terminal handlers
 
-  const join = ({ roomId, user }: { roomId: string; user: IUser }) => {
+  const join = ({ roomId }: { roomId: string }) => {
+    const userId = socket.id;
+    const userData = socket.handshake.query as { username: string, color: string  };
     const room = roomsState.get(roomId);
 
     // users in room without joined user
     const usersInRoom = room.selectUserIds().map((userId) => usersState.get(userId));
 
     // create user instance
-    const joinedUser = usersState.add(user.id, user.color, user.username, roomId).getBody();
+    const joinedUser = usersState.add(userId, userData.color, userData.username, roomId).getBody();
 
     // add user to the room
     room.addUser(joinedUser.id);

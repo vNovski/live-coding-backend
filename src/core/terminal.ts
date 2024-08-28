@@ -28,7 +28,6 @@ export default (io: Server, socket: Socket) => {
 
   const mouseMove = ({ roomId, position }: { roomId: string; position: { x: number, y: number } }) => {
     const user = usersState.get(socket.id);
-
     if (!user) {
       return;
     }
